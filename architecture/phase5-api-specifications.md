@@ -32,7 +32,7 @@
 ### 1.1 Base URL & Versioning
 
 | Environment | Base URL |
-|:---|:---|
+| :--- | :--- |
 | Production | `https://api.carbonmarketplace.io/v1` |
 | Staging | `https://api.staging.carbonmarketplace.io/v1` |
 
@@ -51,7 +51,7 @@ Token format: JWT (RS256-signed by Keycloak). The `realm_access.roles` claim car
 ### 1.3 Keycloak Roles (Phase 2 §2.1)
 
 | Role | Description |
-|:---|:---|
+| :--- | :--- |
 | `PROJECT_DEVELOPER` | Farmers (smallholder track) and institutional developers |
 | `VVB_AUDITOR` | Validation/Verification Body auditors |
 | `CORPORATE_BUYER` | Institutional credit purchasers |
@@ -62,7 +62,7 @@ Token format: JWT (RS256-signed by Keycloak). The `realm_access.roles` claim car
 ### 1.4 Standard Request Headers
 
 | Header | Required | Description |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `Authorization` | Yes (except registration) | Bearer JWT token |
 | `Content-Type` | Yes (on POST/PUT/PATCH) | `application/json` |
 | `Idempotency-Key` | Conditional | UUID v4. Required on all state-mutating endpoints marked with 🔑 below. Per Phase 2 §4.4: keys are stored in Redis with a 24-hour TTL. |
@@ -103,7 +103,7 @@ All API responses follow this envelope:
 In addition to workflow-specific error states (documented per endpoint), the following apply globally:
 
 | HTTP Status | Error Code | Description |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `401` | `AUTH_TOKEN_EXPIRED` | JWT has expired; re-authenticate via Keycloak |
 | `401` | `AUTH_TOKEN_INVALID` | JWT signature verification failed |
 | `403` | `AUTH_INSUFFICIENT_ROLE` | Caller's Keycloak role does not permit this operation |
@@ -118,7 +118,7 @@ In addition to workflow-specific error states (documented per endpoint), the fol
 All list endpoints support cursor-based pagination:
 
 | Parameter | Type | Default | Description |
-|:---|:---|:---|:---|
+| :--- | :--- | :--- | :--- |
 | `page` | integer | `1` | Page number (1-indexed) |
 | `page_size` | integer | `25` | Items per page (max: 100) |
 | `sort_by` | string | varies | Sort field |
@@ -181,7 +181,7 @@ Register a new user account on the platform.
 **Error States** (from Workflow 1 §1.4):
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `409` | `USER_EMAIL_EXISTS` | Email already registered |
 | `409` | `USER_PHONE_EXISTS` | Phone number already registered |
 | `422` | `INVALID_COUNTRY_CODE` | Country code not in supported list |
@@ -250,7 +250,7 @@ Submit KYC/AML verification documents. Supports both smallholder farmer and inst
 **Error States** (from Workflow 1 §1.4):
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `400` | `KYC_INCOMPLETE_DOCUMENTS` | Required documents missing for the selected track |
 | `403` | `KYC_ACCOUNT_BLOCKED` | Account is in `KYC_BLOCKED` state (sanctions match) — cannot resubmit |
 | `409` | `KYC_ALREADY_VERIFIED` | User already has `KYC_VERIFIED` status |
@@ -338,7 +338,7 @@ Create a new carbon credit project in DRAFT status.
 **Error States**:
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `403` | `KYC_NOT_VERIFIED` | Developer has not completed KYC verification |
 | `422` | `INVALID_METHODOLOGY` | Methodology ID not recognized for the specified registry |
 | `422` | `INVALID_CREDITING_PERIOD` | End date before start date or period exceeds registry maximum |
@@ -382,7 +382,7 @@ Upload Project Design Document (PDD) or supporting documentation.
 **Error States**:
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `403` | `PROJECT_NOT_OWNED` | Authenticated user is not the project owner |
 | `404` | `PROJECT_NOT_FOUND` | Project ID does not exist |
 | `409` | `PROJECT_NOT_IN_DRAFT` | Project is not in DRAFT status — documents cannot be added |
@@ -431,7 +431,7 @@ Submit or update the project's spatial boundary (GeoJSON polygon).
 **Error States** (from Workflow 1 §1.4):
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `403` | `PROJECT_NOT_OWNED` | Authenticated user is not the project owner |
 | `404` | `PROJECT_NOT_FOUND` | Project ID does not exist |
 | `409` | `PROJECT_NOT_IN_DRAFT` | Boundary can only be submitted/updated for DRAFT projects |
@@ -469,7 +469,7 @@ Submit a DRAFT project for platform review.
 **Error States** (from Workflow 1 §1.4):
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `403` | `PROJECT_NOT_OWNED` | Authenticated user is not the project owner |
 | `409` | `PROJECT_NOT_IN_DRAFT` | Project is not in DRAFT status |
 | `422` | `PROJECT_MISSING_PDD` | No PDD document has been uploaded |
@@ -544,7 +544,7 @@ List VVBs eligible to verify a given project, filtered by accreditation, methodo
 **Query Parameters**:
 
 | Param | Type | Description |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `page` | integer | Page number |
 | `page_size` | integer | Items per page (max 50) |
 
@@ -573,7 +573,7 @@ List VVBs eligible to verify a given project, filtered by accreditation, methodo
 **Error States** (from Workflow 2 §2.4):
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `404` | `PROJECT_NOT_FOUND` | Project ID does not exist |
 | `409` | `PROJECT_NOT_LISTED` | Project must be in LISTED (or later) status to request VVB assignment |
 
@@ -616,7 +616,7 @@ Assign a VVB to verify the project. Developer-initiated (Phase 4 §11 structural
 **Error States** (from Workflow 2 §2.4):
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `404` | `PROJECT_NOT_FOUND` | Project ID does not exist |
 | `404` | `VVB_NOT_FOUND` | VVB ID does not exist |
 | `409` | `PROJECT_NOT_LISTED` | Project must be in LISTED status |
@@ -652,7 +652,7 @@ VVB accepts the verification engagement.
 **Error States** (from Workflow 2 §2.4):
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `403` | `VVB_NOT_ASSIGNED` | Authenticated VVB is not the assigned auditor for this verification |
 | `404` | `VERIFICATION_NOT_FOUND` | Verification ID does not exist |
 | `409` | `VERIFICATION_NOT_PENDING` | Verification is not in `PENDING_VVB_ACCEPTANCE` status |
@@ -707,7 +707,7 @@ VVB submits the verification/validation report.
 **Error States**:
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `403` | `VVB_NOT_ASSIGNED` | Authenticated VVB is not the assigned auditor |
 | `404` | `VERIFICATION_NOT_FOUND` | Verification ID does not exist |
 | `409` | `VERIFICATION_NOT_IN_PROGRESS` | Verification must be in `IN_PROGRESS` status |
@@ -756,7 +756,7 @@ Platform Admin records the verification decision (approve, request revision, or 
 **Error States** (from Workflow 2 §2.4):
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `404` | `VERIFICATION_NOT_FOUND` | Verification ID does not exist |
 | `409` | `VERIFICATION_NOT_REPORT_SUBMITTED` | Verification must have a submitted report before decision |
 | `409` | `VERIFICATION_CANCELLED_VVB_DISQUALIFIED` | VVB's accreditation was revoked by registry during engagement — verification is void |
@@ -776,7 +776,7 @@ Search available credits for purchase with faceted filtering. Backed by OpenSear
 **Query Parameters**:
 
 | Param | Type | Description |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `q` | string | Free-text search across project name, description, methodology |
 | `registry` | string[] | Filter by registry: `VERRA`, `GOLD_STANDARD`, `ACR`, `CAR`, `PURO_EARTH`, `ISOMETRIC` |
 | `project_type` | string[] | `AVOIDANCE`, `REMOVAL` |
@@ -843,7 +843,7 @@ Search available credits for purchase with faceted filtering. Backed by OpenSear
 **Error States** (from Workflow 4 §4.6):
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `422` | `INVALID_SEARCH_PARAMS` | Invalid filter combination or out-of-range values |
 | `503` | `SEARCH_INDEX_DEGRADED` | OpenSearch cluster unavailable; response served from PostgreSQL fallback (limited faceting) — response includes header `X-Search-Degraded: true` |
 
@@ -958,7 +958,7 @@ Create a purchase order for credits. Initiates the credit locking and payment fl
 **Error States** (from Workflow 4 §4.6 and Workflow 6 §6.4):
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `403` | `KYC_NOT_VERIFIED` | Buyer has not completed KYC verification |
 | `403` | `AUTH_MFA_REQUIRED` | Order exceeds MFA threshold; step-up authentication required |
 | `404` | `LISTING_NOT_FOUND` | Listing ID does not exist |
@@ -1009,7 +1009,7 @@ Initiate payment for an existing order.
 **Error States**:
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `404` | `ORDER_NOT_FOUND` | Order ID does not exist |
 | `409` | `ORDER_NOT_AWAITING_PAYMENT` | Order is not in `AWAITING_PAYMENT` status |
 | `409` | `ORDER_PAYMENT_DEADLINE_EXPIRED` | Payment deadline has passed; credits have been released |
@@ -1065,7 +1065,7 @@ Record an OTC (over-the-counter) trade negotiated off-platform (Phase 4 §4.5).
 **Error States** (from Workflow 4 §4.6):
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `403` | `AUTH_MFA_REQUIRED` | MFA step-up required for OTC trade creation |
 | `404` | `SELLER_NOT_FOUND` | Seller user reference not found |
 | `404` | `BUYER_NOT_FOUND` | Buyer user reference not found |
@@ -1112,7 +1112,7 @@ Confirm participation in an OTC trade. Both seller and buyer must confirm separa
 **Error States** (from Workflow 4 §4.6):
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `403` | `NOT_TRADE_PARTICIPANT` | Authenticated user is not the seller, buyer, or broker for this trade |
 | `404` | `OTC_TRADE_NOT_FOUND` | OTC trade ID does not exist |
 | `409` | `OTC_TRADE_EXPIRED` | Confirmation deadline (72h) has passed |
@@ -1161,7 +1161,7 @@ Broker confirms that off-platform payment has been settled.
 **Error States**:
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `403` | `NOT_TRADE_BROKER` | Authenticated user is not the broker for this trade |
 | `404` | `OTC_TRADE_NOT_FOUND` | OTC trade ID does not exist |
 | `409` | `OTC_TRADE_NOT_AWAITING_PAYMENT` | Both parties have not yet confirmed, or payment already recorded |
@@ -1194,7 +1194,6 @@ Initiate credit retirement. Triggers registry-side retirement flow (Phase 4 §5.
   "retirement_purpose": "VOLUNTARY_OFFSET | VCMI_CLAIM | CORSIA_COMPLIANCE | RESALE_PROHIBITION | OTHER",
   "retirement_reason": "string (free-text description)",
   "vcmi_claim_data": {
-    "⚠ PROVISIONAL — VCMI fields pending verification against latest Claims Code": true,
     "claim_tier": "SILVER | GOLD | PLATINUM",
     "scope_coverage": ["SCOPE_1", "SCOPE_2", "SCOPE_3"],
     "internal_reduction_evidence_ref": "string (object storage key for evidence document, optional)"
@@ -1225,7 +1224,7 @@ Initiate credit retirement. Triggers registry-side retirement flow (Phase 4 §5.
 **Error States** (from Workflow 5 §5.5):
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `403` | `CREDITS_NOT_OWNED` | Authenticated user does not own the specified credits |
 | `403` | `AUTH_MFA_REQUIRED` | MFA step-up required for retirement |
 | `400` | `CREDITS_WRONG_STATUS` | Credits are not in `ACTIVE` or `TRANSFERRED` status |
@@ -1291,7 +1290,7 @@ Content-Disposition: attachment; filename="retirement-certificate-{retirement_id
 **Certificate Data Fields** (per Workflow 5 §5.4):
 
 | Field | Source |
-|:---|:---|
+| :--- | :--- |
 | Credit serial numbers | System (Credit Ledger) |
 | Vintage year | System (credit metadata) |
 | Project reference (registry + platform ID) | System |
@@ -1308,7 +1307,7 @@ Content-Disposition: attachment; filename="retirement-certificate-{retirement_id
 **Error States** (from Workflow 5 §5.5):
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `403` | `CREDITS_NOT_OWNED` | Authenticated user is not the retirement beneficiary or credit owner |
 | `404` | `RETIREMENT_NOT_FOUND` | Retirement ID does not exist |
 | `409` | `CERTIFICATE_NOT_READY` | Retirement is still pending registry confirmation. Certificate is not yet generated. |
@@ -1362,7 +1361,7 @@ Webhook/callback endpoint for payment provider to confirm payment receipt. Also 
 **Error States** (from Workflow 6 §6.4):
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `404` | `ORDER_NOT_FOUND` | Order ID does not exist |
 | `409` | `ORDER_ALREADY_SETTLED` | Order has already been settled |
 | `409` | `ORDER_PAYMENT_TIMED_OUT` | Payment window expired; credits have been released |
@@ -1389,8 +1388,8 @@ Poll the settlement status of an order. Also receives status updates via `order.
       "method": "WIRE_TRANSFER",
       "amount": {"value": 62500.00, "currency": "USD"},
       "confirmed_at": "ISO-8601 | null",
-      "⚠ PROVISIONAL — fx_rate": "number | null (exchange rate if currency conversion applied)",
-      "⚠ PROVISIONAL — fx_rate_locked_at": "ISO-8601 | null"
+      "fx_rate": "number | null (exchange rate if currency conversion applied)",
+      "fx_rate_locked_at": "ISO-8601 | null"
     },
     "settlement_status": {
       "credits_transferred": true,
@@ -1451,7 +1450,7 @@ Request tokenization of a credit batch. Only available when `RegistryConfig.regi
 **Error States** (from Workflow 3 §3.4):
 
 | HTTP | Code | Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `403` | `TOKENIZATION_DISABLED_FOR_REGISTRY` | Tokenization is not enabled for this credit's registry |
 | `403` | `ONCHAINID_NOT_VALID` | User does not have a valid ONCHAINID with required claims |
 | `403` | `AUTH_MFA_REQUIRED` | MFA step-up required |
@@ -1697,7 +1696,7 @@ This is the canonical event schema produced by all six registry adapters (Phase 
 Per Phase 2 §4.4, each registry adapter follows one of three patterns:
 
 | Registry | Pattern | Auth Mechanism | Polling Interval | Webhook Support |
-|:---|:---|:---|:---|:---|
+| :--- | :--- | :--- | :--- | :--- |
 | **Isometric** | A: API-First | OAuth 2.0 + API key | 1–5 min (cursor-based pagination) | ⚠ PROVISIONAL — check if webhook subscription available |
 | **Gold Standard** | A: API-First | Public REST API (read-only, API key) | 5–15 min (timestamp-based) | No |
 | **Puro.earth** | A: API-First | API key (MyPuro API + Public Registry API) | 5–15 min | No |
@@ -1706,6 +1705,7 @@ Per Phase 2 §4.4, each registry adapter follows one of three patterns:
 | **CAR** | C: Scraping-First | Headless browser session (Playwright) + bulk export credentials | 30–60 min (scraping) + daily (bulk export) | No |
 
 **Scraping Resilience** (Phase 2 §4.4 Pattern C):
+
 - DOM selectors externalized as configuration (not hardcoded)
 - Screenshot-on-failure for debugging
 - Anomaly detection: >20% record count drop triggers quarantine
@@ -1956,7 +1956,7 @@ The platform emits webhooks to registered external parties for asynchronous even
 All webhook deliveries include the following headers for verification:
 
 | Header | Description |
-|:---|:---|
+| :--- | :--- |
 | `X-Webhook-Signature` | HMAC-SHA256 signature of the raw request body using the subscriber's webhook secret |
 | `X-Webhook-Timestamp` | Unix timestamp (seconds) of when the webhook was generated |
 | `X-Webhook-Id` | Unique delivery ID (same as `webhook_id` in body, for convenience) |
@@ -1980,7 +1980,7 @@ signature = HMAC-SHA256(
 ### 12.3 Retry Policy
 
 | Attempt | Delay | Max Attempts |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | 1st retry | 30 seconds | — |
 | 2nd retry | 2 minutes | — |
 | 3rd retry | 15 minutes | — |
@@ -2077,7 +2077,7 @@ If all 5 retries fail (non-2xx response), the webhook subscription is marked as 
 Rate limits are enforced at the Kong API Gateway using Redis-backed token bucket counters (Phase 2 §2.5).
 
 | Endpoint Group | Rate Limit | Burst | Window | Key |
-|:---|:---|:---|:---|:---|
+| :--- | :--- | :--- | :--- | :--- |
 | **Auth** (`/auth/register`) | 5 req/min | 2 | Per IP | `rl:ip:{ip}:auth` |
 | **KYC** (`/kyc/*`) | 3 req/hour (submit), 30 req/min (status) | 1 | Per user | `rl:user:{uid}:kyc` |
 | **Projects** (write) | 10 req/min | 3 | Per user | `rl:user:{uid}:proj:w` |
@@ -2095,7 +2095,7 @@ Rate limits are enforced at the Kong API Gateway using Redis-backed token bucket
 **Rate Limit Response Headers** (on every response):
 
 | Header | Description |
-|:---|:---|
+| :--- | :--- |
 | `X-RateLimit-Limit` | Maximum requests in the current window |
 | `X-RateLimit-Remaining` | Remaining requests in the current window |
 | `X-RateLimit-Reset` | Unix timestamp when the window resets |
@@ -2104,7 +2104,7 @@ Rate limits are enforced at the Kong API Gateway using Redis-backed token bucket
 ### 13.2 Caching Strategy (Redis — Phase 2 §2.5)
 
 | Resource | Cache Strategy | TTL | Invalidation |
-|:---|:---|:---|:---|
+| :--- | :--- | :--- | :--- |
 | **Credit state** | Write-through (Phase 2 §2.5) | N/A (always fresh) | Invalidated on every Credit Ledger state transition |
 | **Marketplace search results** | TTL-based | 30 seconds | CDC event from Credit Ledger → OpenSearch → cache bust |
 | **Marketplace credit detail** | TTL-based | 60 seconds | CDC event invalidation |
@@ -2120,7 +2120,7 @@ Rate limits are enforced at the Kong API Gateway using Redis-backed token bucket
 **Cache Headers** (on cacheable GET responses):
 
 | Header | Value |
-|:---|:---|
+| :--- | :--- |
 | `Cache-Control` | `private, max-age={ttl}` |
 | `ETag` | `"{resource_version_hash}"` |
 | `X-Cache` | `HIT` or `MISS` |
@@ -2153,7 +2153,7 @@ Rate limits are enforced at the Kong API Gateway using Redis-backed token bucket
 ### Endpoint Coverage vs. Phase 4 §11 Interface Table
 
 | Workflow | Required Endpoints | Specified In |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | **1. Developer Onboarding** | `POST /auth/register`, `POST /kyc/submit`, `GET /kyc/status`, `POST /projects`, `POST /projects/{id}/documents`, `POST /projects/{id}/boundary`, `POST /projects/{id}/submit`, `GET /projects/{id}` | §2, §3 |
 | **2. VVB Audit** | `GET /projects/{id}/eligible-vvbs`, `POST /projects/{id}/vvb-assignment`, `POST /verifications/{id}/accept`, `POST /verifications/{id}/submit-report`, `POST /verifications/{id}/decision` | §4 |
 | **3. Registry Issuance** | Internal (Kafka event-driven, no user-facing API). `POST /credits/{batch_id}/tokenize`, `GET /credits/{batch_id}/tokenization-status` | §9 |
@@ -2164,7 +2164,7 @@ Rate limits are enforced at the Kong API Gateway using Redis-backed token bucket
 ### Items Flagged ⚠ PROVISIONAL
 
 | Item | Section | Reason | Resolution Required Before Implementation |
-|:---|:---|:---|:---|
+| :--- | :--- | :--- | :--- |
 | **Payment provider integration fields** | §5.4, §8.1, §8.2 | No payment provider selected. `payment_details` and provider-specific response fields are stubs. | Complete Phase 4a payments-compliance research. Select provider (Stripe/Razorpay/SWIFT). Define concrete request/response schemas. |
 | **Cross-border FX handling** | §8.2 | `fx_rate` and `fx_rate_locked_at` fields are stubs. Rate locking mechanism, FX risk bearer, and LRS applicability undetermined. | Include in payments-compliance research. |
 | **Seller payout / platform fee deduction** | §8.2 | `seller_payout_status` and `platform_fee_deducted` are stubs. Fee structure, GST applicability, and withholding tax treatment undetermined. | Commission Indian tax counsel opinion. Define fee schedule. |
