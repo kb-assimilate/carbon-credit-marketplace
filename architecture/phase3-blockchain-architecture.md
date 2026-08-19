@@ -12,7 +12,7 @@
 The following constraints are inherited from Phase 2 and are non-negotiable for this architecture:
 
 | Constraint | Source | Implication for Phase 3 |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | External registries are the authoritative source of truth | Phase 2 §9, item 2 | On-chain state is a **subordinate mirror**, never a parallel authority. Every on-chain token must be reconcilable against registry state. |
 | No PII or pseudonym-to-identity mappings on-chain | Phase 2 §3.2, §9 item 4 | Only `owner_ref` and `actor_ref` pseudonym hashes may appear on-chain. ONCHAINID claims must contain **only** compliance attestation flags, never personal data. |
 | D-MRV data referenced by content hash only | Phase 2 §9 item 7 | Smart contracts store IPFS CIDs or SHA-256 digests. Raw sensor/satellite data never touches the chain. |
@@ -31,7 +31,7 @@ Polygon was selected outside this phase. This section validates the choice and f
 #### Validation Against Phase 3a Findings
 
 | Criterion | Polygon PoS Assessment | Phase 3a Reference |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | **Gas cost** | $0.005–$0.05 per tx — acceptable for credit-level operations (mint, transfer, retire) | Phase 3a §Blockchain Infrastructure |
 | **Finality** | ~2s probabilistic, ~30 min for Ethereum checkpoint finality — acceptable for carbon credit settlement where registry confirmation is the bottleneck, not chain finality | Phase 3a §Blockchain Infrastructure |
 | **EVM compatibility** | Full EVM — ERC-3643, ERC-4337, ERC-1155 all natively supported | Phase 3a §ERC-3643, §ERC-4337 |
@@ -52,7 +52,7 @@ Phase 3a explicitly documents that Polygon was the execution layer for the Touca
 **What in this architecture actively prevents a repeat:**
 
 | Toucan/KlimaDAO Failure Mode | This Architecture's Structural Prevention |
-|:---|:---|
+| :--- | :--- |
 | Retire-then-mint bridging | §4: Immobilization/custody model — credits are **locked**, not retired, before minting. Un-retirement is impossible. Detokenization restores the credit to active status. |
 | Blind fungible pooling (BCT) | §2: ERC-3643/ERC-1155 hybrid design — each token batch preserves project ID, vintage, methodology, CCP status. No generic fungible pool contract is deployed. Tokens cannot be deposited into undifferentiated pools. |
 | Un-KYC'd speculative trading | §2: ERC-3643 identity gating — every transfer requires verified ONCHAINID claims. Anonymous DeFi pool deposits are rejected at the protocol level. |
@@ -79,7 +79,7 @@ The architecture deploys an **ERC-1155 multi-token contract wrapped inside ERC-3
 #### Why This Hybrid, Not Alternatives
 
 | Approach | Evaluation | Verdict |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | **Pure ERC-3643 (fungible, one token per registry)** | Reproduces BCT's blind fungibility. A Verra token and a Gold Standard token may be independently fungible, but credits from VM0047 ARR 2025 vintage and VM0006 REDD+ 2012 vintage are collapsed into the same Verra token. This is the exact failure mode Phase 3a warns against. | **Rejected** |
 | **Pure ERC-3643 (fungible, one token per project-vintage)** | Avoids cross-project pooling, but at 100K projects × 10 vintages = 1M+ independent ERC-20 token contracts. Deployment gas, indexing, and DEX listing overhead are unmanageable. | **Rejected** |
 | **Pure ERC-721 (one NFT per credit)** | Maximum metadata granularity, but 1B NFTs at scale. Batch operations (buy 10,000 credits) require 10,000 individual transfers. Gas and UX are prohibitive. | **Rejected** |
@@ -137,6 +137,7 @@ The Identity Registry maps Polygon wallet addresses to verified ONCHAINID identi
 - **No PII on-chain**: The ONCHAINID contract stores only claim topic codes and claim issuer signatures, never personal data
 
 **Registration flow**:
+
 1. User completes KYC via Phase 2's Identity & Access Service (Keycloak + third-party KYC provider)
 2. Phase 2 issues a KYC completion event on Kafka
 3. The Blockchain Bridge Service (new service, §5) deploys an ONCHAINID contract for the user (or reuses existing) and registers it in the Identity Registry
@@ -147,13 +148,14 @@ The Identity Registry maps Polygon wallet addresses to verified ONCHAINID identi
 Claim Issuers are trusted entities that sign attestation claims attached to a user's ONCHAINID. For this platform, the following claim issuers are registered:
 
 | Claim Issuer | Claim Topics Issued | Trust Source |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | **Platform KYC Issuer** (platform-operated) | `KYC_VERIFIED`, `AML_CLEARED`, `ENTITY_TYPE` (individual / corporate / project_developer) | Phase 2 Identity & Access Service KYC completion |
 | **Jurisdiction Issuer** (platform-operated) | `JURISDICTION_APPROVED` (country whitelist), `SANCTIONS_CLEAR` | Phase 2 sanctions screening results |
 | **Registry Authorization Issuer** (platform-operated) | `REGISTRY_AUTHORIZED_{REGISTRY_NAME}` — issued only to wallets linked to accounts with valid registry custody agreements | Registry Sync Service confirmation |
 | **CORSIA Compliance Issuer** (future, optional) | `CORSIA_BUYER_ELIGIBLE` — for airline buyers under CORSIA Phase 1 | External CORSIA verification flow |
 
 **Claim lifecycle**:
+
 - Claims have an `expiry` timestamp (e.g., KYC valid for 12 months)
 - The Blockchain Bridge Service renews claims on-chain when the off-chain KYC is refreshed
 - Revoked claims (e.g., entity fails re-screening) are removed from the ONCHAINID, immediately blocking further token transfers
@@ -165,7 +167,7 @@ The Compliance Module is a smart contract that encodes transfer rules evaluated 
 **Compliance rules for carbon credit tokens**:
 
 | Rule ID | Rule Logic | Rationale |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `RULE_KYC` | Both sender and receiver must have `KYC_VERIFIED` claim with `expiry > block.timestamp` | Registry mandate: no anonymous holding |
 | `RULE_SANCTIONS` | Both parties must have `SANCTIONS_CLEAR` claim | OFAC/EU/UN sanctions compliance |
 | `RULE_JURISDICTION` | Receiver's `JURISDICTION_APPROVED` claim must include the token's `hostCountry` (for credits requiring Article 6 CA authorization) | Article 6 corresponding adjustment requirements |
@@ -206,6 +208,7 @@ ONCHAINID Contract (per user)
 ### Design Goal
 
 Farmers, project developers, and institutional buyers must interact with tokenized carbon credits without:
+
 - Managing private keys or seed phrases
 - Holding MATIC (or any native gas token)
 - Understanding blockchain transaction mechanics
@@ -247,14 +250,14 @@ sequenceDiagram
 #### 3.1 Smart Account Implementation
 
 | Component | **Selected** | Alternative Considered | Rationale |
-|:---|:---|:---|:---|
+| :--- | :--- | :--- | :--- |
 | Smart Account | **Safe (formerly Gnosis Safe) + ERC-4337 module** | Kernel (ZeroDev), SimpleAccount (Ethereum Foundation reference), Biconomy Smart Account | Safe is the most audited smart account implementation (~$100B+ secured). The 4337 module enables Safe accounts to operate as ERC-4337 smart accounts. ZeroDev's Kernel is lighter but less battle-tested. SimpleAccount is a reference implementation, not production-grade. |
 | Account Factory | **SafeProxyFactory with deterministic CREATE2 deployment** | Custom factory | Deterministic addresses allow pre-computing a user's wallet address before deployment — enables receiving tokens before first transaction. |
 
 #### 3.2 Authentication & Key Management
 
 | User Type | Authentication Method | Key Storage | Rationale |
-|:---|:---|:---|:---|
+| :--- | :--- | :--- | :--- |
 | **Farmers / Individuals** | WebAuthn passkeys (device biometric) | Device secure enclave (TPM / Secure Enclave) | No seed phrase. Passkey is tied to the user's device biometric. If device is lost, recovery via platform-held recovery key (§6). Phase 3a confirms passkey support is production-mature. |
 | **Corporate buyers** | OAuth 2.0 SSO (Azure AD, Google Workspace) + session keys | HSM-backed session keys with time/operation-scoped permissions | Corporations won't install crypto wallets. SSO login generates a session key valid for N hours with scoped permissions (e.g., "can retire up to 10,000 credits"). |
 | **Brokers / Power users** | Optional: MetaMask / hardware wallet (Ledger) for self-custody | User-managed EOA or hardware wallet | Power users who want self-custody can connect a standard wallet. The platform still requires ONCHAINID verification. |
@@ -262,7 +265,7 @@ sequenceDiagram
 #### 3.3 Paymaster Design
 
 | Parameter | Value | Rationale |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | **Paymaster type** | Verifying Paymaster (sponsored gas) | Users never pay gas. Platform absorbs gas costs as an operational expense (~$0.01–0.05 per tx at current Polygon gas). |
 | **Sponsorship policy** | Whitelist-based: only platform-registered users (with valid session) can use the paymaster. Per-user daily gas budget: $5 (configurable). | Prevents abuse by limiting gas sponsorship to authenticated, KYC'd users with rate limits. |
 | **Funding** | Platform treasury funds the paymaster contract with MATIC. Automated top-up when balance drops below 100 MATIC. | Operational cost at 10,000 tx/day ≈ $150–500/day at current gas prices. Manageable. |
@@ -271,7 +274,7 @@ sequenceDiagram
 #### 3.4 Bundler Infrastructure
 
 | Parameter | Value |
-|:---|:---|
+| :--- | :--- |
 | **Primary bundler** | Pimlico hosted bundler (production SLA) |
 | **Fallback bundler** | Self-hosted bundler (Stackup open-source) on platform Kubernetes cluster |
 | **Submission strategy** | Client SDK submits to primary; on 3 consecutive failures (timeout / 5xx), auto-failover to fallback |
@@ -285,7 +288,7 @@ sequenceDiagram
 ### Cost Implications
 
 | Cost Item | Estimate (10,000 tx/day) | Notes |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | Gas sponsorship (paymaster) | $150–500/day | Polygon PoS gas at $0.015–0.05/tx |
 | Bundler service fees | $200–500/month | Pimlico enterprise tier |
 | Smart account deployment (one-time per user) | ~$0.10–0.30 per account | CREATE2 deployment, amortized over user lifetime |
@@ -308,7 +311,7 @@ This architecture follows the **immobilization/custody model** exclusively. Per 
 For each supported registry, the platform (or a designated custodian) operates a **dedicated custody account** on the registry:
 
 | Registry | Custody Account Type | Status |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | Gold Standard | Platform partner account (requires bilateral agreement with GS) | ⚠ PROVISIONAL — requires executed agreement |
 | Puro.earth | API-integrated partner account via Nasdaq infrastructure | ⚠ PROVISIONAL — requires executed agreement |
 | Isometric | Authenticated API organization account | ⚠ PROVISIONAL — requires executed agreement |
@@ -323,7 +326,7 @@ For each supported registry, the platform (or a designated custodian) operates a
 The on-chain token lifecycle defines four states that map onto Phase 2's existing credit state machine:
 
 | On-Chain State | Description | Phase 2 Credit State Mapping |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `IMMOBILIZED` | Credit locked in registry custody account; on-chain token minted but held by the Vault contract (not yet released to a user) | `ACTIVE` (credit is active on registry, but locked in custody sub-account) |
 | `TOKENIZED` | Token released from Vault to a verified holder; freely transferable among ERC-3643-verified wallets | `ACTIVE` / `TRANSFERRED` (ownership changes happen on-chain, reflected back to Phase 2) |
 | `PENDING_RETIREMENT` | On-chain burn initiated; waiting for registry-side retirement confirmation | Transient state — not a Phase 2 state; the Credit Ledger Service holds the credit in a `RETIREMENT_PENDING` lock |
@@ -529,7 +532,7 @@ The oracle design follows a **push attestation model**, not a polling model. The
 ### Why Not Standard Oracle Patterns
 
 | Oracle Pattern | Why Rejected |
-|:---|:---|
+| :--- | :--- |
 | **Chainlink / Band (external oracle networks)** | The data source is the platform's own Credit Ledger Service, not an external public API. Using Chainlink to read our own database adds cost and latency without adding trust — the platform is already the trusted party for registry data ingestion. |
 | **On-chain polling of registry APIs** | Violates Phase 2 constraint: the blockchain must not independently access registries. Also technically impractical (smart contracts cannot make HTTP calls). |
 | **UMA / optimistic oracle** | Dispute-based oracles are designed for contested facts. Credit state is not disputed — it's deterministically derived from registry state via Phase 2's reconciliation pipeline. Adding a dispute window adds latency without value. |
@@ -576,7 +579,7 @@ graph TB
 This is the **only new service** introduced by Phase 3. It sits between Phase 2's Kafka event bus and the Polygon network:
 
 | Responsibility | Mechanism |
-|:---|:---|
+| :--- | :--- |
 | **Consume credit lifecycle events** from Kafka | Kafka consumer group: `blockchain-bridge` |
 | **Sign attestations** for on-chain state changes | HSM-backed ECDSA signer (§6) |
 | **Submit transactions** to Polygon | Via JSON-RPC to Polygon node (Alchemy/Infura redundant endpoints) |
@@ -600,6 +603,7 @@ struct CreditAttestation {
 ```
 
 The `AttestationVerifier` contract:
+
 1. Recovers the signer from the EIP-712 signature
 2. Verifies the signer is in the `ATTESTER_ROLE` set (multisig-managed)
 3. Verifies the nonce is sequential (replay protection)
@@ -608,7 +612,7 @@ The `AttestationVerifier` contract:
 ### Latency Characteristics
 
 | Event Direction | Expected Latency | Bottleneck |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | Registry → Credit Ledger → On-Chain | 1–60 min (registry-dependent) + ~5s (Kafka + tx submission) | Registry sync interval (Phase 2 §4) |
 | On-Chain → Credit Ledger | ~5–15s | Polygon block time + event listener processing |
 
@@ -664,7 +668,7 @@ graph TB
 ### Key Management Tiers
 
 | Wallet | Key Storage | Access Control | Rotation Policy |
-|:---|:---|:---|:---|
+| :--- | :--- | :--- | :--- |
 | **Admin Multisig** (3-of-5 Safe) | Hardware wallets (Ledger) held by 5 named individuals: CEO, CTO, Lead Blockchain Engineer, Head of Compliance, External Legal Counsel | Requires 3/5 signatures for: contract upgrades, role changes, emergency pause, adding claim issuers, enabling new registries | Annual signer rotation review. Immediate rotation on personnel departure. |
 | **Attester Wallet** | AWS CloudHSM or Azure Managed HSM (FIPS 140-2 Level 3) | Automated — only the Blockchain Bridge Service has API access. Key never leaves HSM boundary. | Rotate every 6 months. Old attester key removed from `ATTESTER_ROLE` after new key is operational. |
 | **Paymaster Funder** | AWS CloudHSM (separate from Attester) | Automated — funding bot with spending cap (max 1000 MATIC per day) | Rotate every 12 months. |
@@ -674,7 +678,7 @@ graph TB
 ### Access Control Roles (On-Chain)
 
 | Role | Assigned To | Permissions |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `DEFAULT_ADMIN_ROLE` | Admin Multisig | Grant/revoke all other roles |
 | `ATTESTER_ROLE` | Attester Wallet address | Submit signed attestations to `AttestationVerifier` |
 | `MINTER_ROLE` | `CreditVault` contract (called by `AttestationVerifier` on valid attestation) | Mint new tokens |
@@ -724,7 +728,7 @@ function enableRegistry(bytes32 registryId) external onlyRole(DEFAULT_ADMIN_ROLE
 ### Gating Rules
 
 | Rule | Enforcement Point | Bypass Condition |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | `CreditVault.mint()` reverts if `!registryTokenizationEnabled[credit.registrySource]` | On-chain (CreditVault contract) | `DEFAULT_ADMIN_ROLE` multisig calls `enableRegistry()` |
 | Blockchain Bridge Service ignores `CreditTokenizedEvent` for disabled registries | Off-chain (Bridge Service config) | Config flag: `verra.tokenization.enabled = false` |
 | Phase 2 Credit Ledger Service does not offer "tokenize" action for Verra credits in API | Off-chain (API business logic) | Feature flag: `VERRA_TOKENIZATION_ENABLED` environment variable |
@@ -809,7 +813,7 @@ graph TB
 ### Contract Details
 
 | Contract | Proxy Pattern | Size Estimate | External Dependencies |
-|:---|:---|:---|:---|
+| :--- | :--- | :--- | :--- |
 | `CarbonCreditToken` | UUPS Proxy | ~800 LOC | OpenZeppelin ERC-1155, AccessControl |
 | `CreditVault` | UUPS Proxy | ~1200 LOC | CarbonCreditToken, AttestationVerifier, IdentityRegistry |
 | `IdentityRegistry` | UUPS Proxy | ~400 LOC | IdentityRegistryStorage, ClaimIssuer interface |
@@ -828,7 +832,7 @@ graph TB
 ### Upgrade Policy
 
 | Change Type | Process | Timelock |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | **Emergency pause** | Any `PAUSER_ROLE` holder (Attester wallet or Multisig) | Immediate |
 | **Compliance rule addition** | Multisig proposal → TimelockController | 24 hours |
 | **Contract logic upgrade (UUPS)** | Multisig proposal → TimelockController → upgrade execution | 48 hours |
@@ -844,19 +848,15 @@ graph TB
 ```mermaid
 stateDiagram-v2
     state "OFF-CHAIN (Phase 2 Credit Ledger)" as offchain {
-        state "Project Lifecycle" as pl {
-            L: LISTED
-            VA: VALIDATED
-            VE: VERIFIED
-        }
-        state "Credit Lifecycle" as cl {
-            IS: ISSUED
-            AC: ACTIVE
-            TR: TRANSFERRED
-            RE: RETIRED
-            CA: CANCELLED
-            BU: BUFFERED
-        }
+        L: LISTED
+        VA: VALIDATED
+        VE: VERIFIED
+        IS: ISSUED
+        AC: ACTIVE
+        TR: TRANSFERRED
+        RE: RETIRED
+        CA: CANCELLED
+        BU: BUFFERED
 
         L --> VA: VVB validation
         VA --> VE: VVB verification
@@ -1086,7 +1086,7 @@ Every on-chain state change requires **synchronous confirmation** from the Credi
 ```
 
 | Dimension | Assessment |
-|:---|:---|
+| :--- | :--- |
 | **Consistency guarantee** | Strong — every on-chain action is registry-confirmed before finalization |
 | **State divergence risk** | Very low — confirmation is pre-execution |
 | **Latency** | High — every transfer adds 5–60 seconds (Bridge Service round-trip). For registries with slow API responses (ACR, CAR), this could be minutes. |
@@ -1114,7 +1114,7 @@ On-chain transfers execute **optimistically** (relying on ERC-3643 compliance ch
 ```
 
 | Dimension | Assessment |
-|:---|:---|
+| :--- | :--- |
 | **Consistency guarantee** | Eventual — divergence window of up to 15 min (reconciliation interval) |
 | **State divergence risk** | Low-medium — mitigated by reconciliation + immediate emergency revocation |
 | **Latency** | Low — transfers are instant (single on-chain tx, ~2s finality) |
@@ -1134,7 +1134,7 @@ On-chain transfers execute **optimistically** (relying on ERC-3643 compliance ch
 **Hybrid approach**: Use **Approach A (synchronous confirmation) for mint and retirement operations** (high-stakes, infrequent, latency-tolerant). Use **Approach B (optimistic execution) for transfers** (high-frequency, latency-sensitive, lower individual risk because the underlying credit remains immobilized regardless of who holds the token).
 
 | Operation | Consistency Model | Rationale |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | **Mint** (lock + mint) | Synchronous (Approach A) | Minting without confirmed custody is catastrophic — it creates unbacked tokens. Worth the latency. |
 | **Transfer** | Optimistic (Approach B) | Underlying credit remains in custody regardless of on-chain holder. Divergence risk is low — the credit's existence is not in question, only its on-chain ownership. |
 | **Retirement** (burn + registry retire) | Synchronous (Approach A) | Retirement without registry confirmation creates a double-claim. Worth the latency. |
@@ -1170,7 +1170,7 @@ On-chain transfers execute **optimistically** (relying on ERC-3643 compliance ch
 ### Interfaces This Phase Exposes to Phase 4
 
 | Interface | Contract |
-|:---|:---|
+| :--- | :--- |
 | Tokenize a credit | Phase 2 API → Credit Ledger lock → Bridge Service → AttestationVerifier → CreditVault.mint() |
 | Transfer a token | User → ERC-4337 EntryPoint → CarbonCreditToken.safeTransferFrom() (compliance-checked) |
 | Retire a token | User → CreditVault.initiateRetirement() → Bridge Service → Registry retirement → CreditVault.confirmRetirement() |
@@ -1182,7 +1182,7 @@ On-chain transfers execute **optimistically** (relying on ERC-3643 compliance ch
 ### Items Flagged ⚠ PROVISIONAL for Further Verification
 
 | Item | Dependency | Verification Action |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | Polygon network selection | Institutional counterparty acceptance | Survey target institutional buyers on Polygon acceptance vs. Base/Arbitrum |
 | Gold Standard custody agreement | Bilateral agreement with Gold Standard | Execute partnership agreement with Gold Standard's Digital Assets Working Group |
 | Puro.earth custody agreement | Bilateral agreement with Puro.earth/Nasdaq | Execute partnership agreement via Nasdaq enterprise infrastructure |
